@@ -1,13 +1,13 @@
 defmodule Identicon do
   @moduledoc false
-  defstruct [:hash, :color, :list]
+  defstruct [:hash, :color, :grid]
   require Integer
 
   def create_identicon(input) do
     input
     |> hash_input()
     |> get_color()
-    |> create_list()
+    |> create_grid()
     |> create_image()
     |> save_image()
   end
@@ -25,8 +25,8 @@ defmodule Identicon do
     %Identicon{struct | color: {r, g, b}}
   end
 
-  def create_list(%Identicon{hash: hash} = struct) do
-    list =
+  def create_grid(%Identicon{hash: hash} = struct) do
+    grid =
       hash
       |> Enum.drop(1)
       |> Enum.chunk_every(3)
@@ -42,15 +42,15 @@ defmodule Identicon do
         {top_left, bottom_right, val}
       end)
 
-    %Identicon{struct | list: list}
+    %Identicon{struct | grid: grid}
   end
 
-  def create_image(%Identicon{color: color, list: list}) do
+  def create_image(%Identicon{color: color, grid: grid}) do
     image = :egd.create(500, 500)
     fill = :egd.color(color)
 
-    Enum.each(list, fn {start, stop, val} ->
-      if not Integer.is_odd(val) do
+    Enum.each(grid, fn {start, stop, val} ->
+      unless Integer.is_odd(val) do
         :egd.filledRectangle(image, start, stop, fill)
       end
     end)
